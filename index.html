@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dorca Conecta | Calculadora de cambio</title>
+<style>
+:root{--bg:#07111d;--card:#0d1b2a;--card2:#10243a;--gold:#d7ad38;--green:#19b866;--text:#f5f7fa;--muted:#aeb9c6;--danger:#ef5350}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#03080e,#081624);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:22px}.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#e6bf43,#9e7715);display:grid;place-items:center;color:#07111d;font-weight:900;font-size:20px;box-shadow:0 5px 20px #0008}
+.brand h1{margin:0;font-size:25px}.brand p{margin:3px 0;color:var(--muted);font-size:13px}
+button,input,select{font:inherit}.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer}.adminBtn{background:#17283a;color:#fff;border:1px solid #36506a}
+.card{background:rgba(13,27,42,.94);border:1px solid #24415b;border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px #0005}
+.rates{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.rate{background:linear-gradient(135deg,#122b40,#0c1d2d);border:1px solid #2d4b63;border-radius:14px;padding:16px}.rate small{color:var(--muted)}.rate strong{display:block;font-size:30px;color:#f0c84b;margin-top:5px}
+.valid{margin-top:12px;color:var(--muted);font-size:13px}.title{margin:0 0 15px;font-size:20px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#081421;border-radius:12px;padding:4px;margin-bottom:18px}.tabs button{background:transparent;color:#aab8c6;border:0;padding:12px;border-radius:9px;font-weight:800;cursor:pointer}.tabs .active{background:#d7ad38;color:#07111d}
+label{display:block;color:#c5d0da;font-size:13px;font-weight:700;margin:12px 0 6px}input,select{width:100%;background:#06111c;border:1px solid #29455d;color:#fff;border-radius:10px;padding:13px;outline:none}
+.result{margin-top:16px;background:#071a2a;border:1px solid #24506d;border-radius:13px;padding:16px;min-height:75px}.result b{color:#6ee7a8}.calc{width:100%;margin-top:14px;background:var(--green);color:#06130c}
+.wa{display:block;text-align:center;text-decoration:none;background:#16a85c;color:white;padding:13px;border-radius:10px;font-weight:900;margin-top:12px}
+.methods{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.method{background:#091827;border:1px solid #25435b;border-radius:13px;padding:14px}.method h3{margin:0 0 10px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid #20384c;padding:10px 0}.copy{background:#d7ad38;color:#07111d;padding:8px 11px;border-radius:8px;border:0;font-weight:800}
+.admin{display:none}.admin.open{display:block}.save{background:#d7ad38;color:#07111d;width:100%;margin-top:14px}.notice{font-size:12px;color:#aeb9c6;margin-top:10px;line-height:1.45}
+footer{text-align:center;color:#718091;font-size:12px;padding:10px 0 30px}
+@media(max-width:700px){.rates,.methods{grid-template-columns:1fr}.wrap{padding:14px}.brand h1{font-size:21px}.rate strong{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="logo">DC</div><div><h1>Dorca Conecta</h1><p>Calculadora de cambio · Colombia ↔ Venezuela</p></div></div>
+  <button class="btn adminBtn" onclick="toggleAdmin()">Administrador</button>
+</header>
+
+<section class="card">
+  <h2 class="title">💱 Tasas publicadas</h2>
+  <div class="rates">
+    <div class="rate"><small>🇨🇴 Colombia → 🇻🇪 Venezuela</small><strong id="pubCoVe">3,98</strong><span>Bs por cada $1 COP según la tasa publicada</span></div>
+    <div class="rate"><small>🇻🇪 Venezuela → 🇨🇴 Colombia</small><strong id="pubVeCo">3,00</strong><span>COP por cada Bs enviado</span></div>
+  </div>
+  <div class="valid">Tasas vigentes: <b id="pubFrom">28/09/2026</b> al <b id="pubTo">30/09/2026</b>. Última publicación: <b id="pubDate">28/09/2026</b>.</div>
+</section>
+
+<section class="card">
+  <h2 class="title">Calcula tu operación</h2>
+  <div class="tabs">
+    <button id="tabCoVe" class="active" onclick="setMode('coVe')">🇨🇴 Colombia → Venezuela</button>
+    <button id="tabVeCo" onclick="setMode('veCo')">🇻🇪 Venezuela → Colombia</button>
+  </div>
+  <label id="amountLabel">Pesos que envías (COP)</label>
+  <input id="amount" type="number" min="0" placeholder="Ej: 100000" oninput="calculate()">
+  <div class="notice" id="limits">Mínimo: $20.000 COP · Máximo: $4.000.000 COP</div>
+  <div class="result" id="result">Ingresa un monto para calcular.</div>
+  <button class="btn calc" onclick="calculate()">Calcular operación</button>
+  <a class="wa" id="wa" href="#" target="_blank">Continuar esta operación por WhatsApp</a>
+</section>
+
+<section class="card">
+  <h2 class="title">💳 Métodos de pago</h2>
+  <div class="methods">
+    <div class="method">
+      <h3>🇨🇴 Colombia → Venezuela</h3>
+      <div class="row"><span>Nequi · Dorca Pinto<br><b>3019211382</b></span><button class="copy" onclick="copyText('3019211382')">Copiar</button></div>
+      <div class="row"><span>Nequi · Eliexer Bolívar<br><b>3000000000</b></span><button class="copy" onclick="copyText('3000000000')">Copiar</button></div>
+      <div class="row"><span>Nequi · Ashley Bolívar<br><b>3207545616</b></span><button class="copy" onclick="copyText('3207545616')">Copiar</button></div>
+      <div class="row"><span>Llave Bre<br><b>@dorca057</b></span><button class="copy" onclick="copyText('@dorca057')">Copiar</button></div>
+    </div>
+    <div class="method">
+      <h3>🇻🇪 Venezuela → Colombia</h3>
+      <div class="row"><span>Banco de Venezuela<br><b>Datos de pago</b></span><button class="copy" onclick="copyText('Banco de Venezuela')">Copiar</button></div>
+      <div class="row"><span>Banco Venezolano de Crédito<br><b>Pago móvil</b></span><button class="copy" onclick="copyText('Banco Venezolano de Crédito')">Copiar</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="card admin" id="admin">
+  <h2 class="title">🔐 Administrador · Publicar tasas</h2>
+  <label>Tasa Colombia → Venezuela</label><input id="editCoVe" type="number" step="0.01" value="3.98">
+  <label>Tasa Venezuela → Colombia</label><input id="editVeCo" type="number" step="0.01" value="3.00">
+  <label>Vigente desde</label><input id="editFrom" type="date" value="2026-09-28">
+  <label>Vigente hasta</label><input id="editTo" type="date" value="2026-09-30">
+  <button class="btn save" onclick="publishRates()">Guardar y publicar tasas</button>
+  <div class="notice">La publicación se guarda en este navegador. Para que los cambios del administrador se sincronicen automáticamente con todos los clientes desde cualquier dispositivo, esta versión debe conectarse a una base de datos (por ejemplo Supabase); no se puede conseguir esa sincronización global usando únicamente un HTML estático.</div>
+</section>
+
+<footer>Dorca Conecta · Calculadora de cambio</footer>
+</div>
+
+<script>
+let mode='coVe';
+const defaultRates={coVe:3.98,veCo:3.00,from:'2026-09-28',to:'2026-09-30',published:'2026-09-28'};
+let rates=JSON.parse(localStorage.getItem('dorcaRates')||'null')||defaultRates;
+function fmt(n){return Number(n).toLocaleString('es-CO',{maximumFractionDigits:2})}
+function dateFmt(v){if(!v)return '';const [y,m,d]=v.split('-');return `${d}/${m}/${y}`}
+function render(){
+ document.getElementById('pubCoVe').textContent=fmt(rates.coVe);
+ document.getElementById('pubVeCo').textContent=fmt(rates.veCo);
+ document.getElementById('pubFrom').textContent=dateFmt(rates.from);
+ document.getElementById('pubTo').textContent=dateFmt(rates.to);
+ document.getElementById('pubDate').textContent=dateFmt(rates.published);
+ document.getElementById('editCoVe').value=rates.coVe;
+ document.getElementById('editVeCo').value=rates.veCo;
+ document.getElementById('editFrom').value=rates.from;
+ document.getElementById('editTo').value=rates.to;
+ calculate();
+}
+function setMode(m){
+ mode=m;
+ document.getElementById('tabCoVe').classList.toggle('active',m==='coVe');
+ document.getElementById('tabVeCo').classList.toggle('active',m==='veCo');
+ document.getElementById('amountLabel').textContent=m==='coVe'?'Pesos que envías (COP)':'Bolívares que envías (Bs)';
+ document.getElementById('amount').placeholder=m==='coVe'?'Ej: 100000':'Ej: 5000';
+ document.getElementById('limits').textContent=m==='coVe'?'Mínimo: $20.000 COP · Máximo: $4.000.000 COP':'Mínimo: 5.000 Bs · Máximo: 300.000 Bs';
+ document.getElementById('amount').value='';
+ document.getElementById('result').textContent='Ingresa un monto para calcular.';
+ document.getElementById('wa').href='#';
+}
+function calculate(){
+ const x=Number(document.getElementById('amount').value);
+ if(!x){return}
+ let text='';
+ if(mode==='coVe'){
+   if(x<20000||x>4000000){text='Monto fuera del límite permitido. Mínimo $20.000 COP y máximo $4.000.000 COP.'}
+   else{text=`Recibes aproximadamente <b>${fmt(x/rates.coVe)} Bs</b><br>Equivalente enviado: ${fmt(x)} COP · Tasa: ${fmt(rates.coVe)}`; }
+ }else{
+   if(x<5000||x>300000){text='Monto fuera del límite permitido. Mínimo 5.000 Bs y máximo 300.000 Bs.'}
+   else{const cop=x*rates.veCo; text=`Recibes aproximadamente <b>${fmt(cop)} COP</b><br>Bolívares enviados: ${fmt(x)} Bs · Tasa: ${fmt(rates.veCo)}`;}
+ }
+ document.getElementById('result').innerHTML=text;
+ const msg=`Hola Dorca Conecta. Quiero realizar una operación ${mode==='coVe'?'Colombia → Venezuela':'Venezuela → Colombia'} por ${fmt(x)} ${mode==='coVe'?'COP':'Bs'}.`;
+ document.getElementById('wa').href='https://wa.me/?text='+encodeURIComponent(msg);
+}
+function publishRates(){
+ rates={coVe:Number(document.getElementById('editCoVe').value),veCo:Number(document.getElementById('editVeCo').value),from:document.getElementById('editFrom').value,to:document.getElementById('editTo').value,published:new Date().toISOString().slice(0,10)};
+ localStorage.setItem('dorcaRates',JSON.stringify(rates)); render(); alert('Tasas publicadas correctamente en este dispositivo.');
+}
+function toggleAdmin(){document.getElementById('admin').classList.toggle('open')}
+function copyText(t){navigator.clipboard?.writeText(t);alert('Copiado: '+t)}
+render();
+</script>
+</body>
+</html>
